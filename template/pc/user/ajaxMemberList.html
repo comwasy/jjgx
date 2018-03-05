@@ -1,0 +1,25 @@
+  <empty name="memberList">
+    <p class="ncyekjl memberFlow_{$flow} sub_{$leader_id}_{$flow - 1}">--暂无记录--</p>
+  </empty>
+      <volist name="memberList" id="vo">
+          <if condition="$flow eq 2">
+              <div class="card-list accbala-list member_flow">
+                  <else/>
+              <div class="sub sub_{$leader_id}_{$flow - 1}">
+          </if>
+          <ul class="memberFlow_{$flow}">
+                  <li>{$vo.user_id}</li>
+                  <li>{$vo.mobile|default="--"}</li>
+                  <li>{$vo.nickname|default="--"}</li>
+                  <li>{$vo.level_name}</li>
+                  <li>{$flow - 1}</li>
+                  <li>{$vo.remark|default="--"}</li>
+                  <if condition="$flow lt 4">
+                      <li><a data-url="{:U('Home/User/ajaxMemberList',array('id'=>$vo.user_id,'flow'=>$flow))}" onclick="getNext(this,{$vo.user_id},{$flow})">查看下级会员</a></li>
+                      <else />
+                      <li>--</li>
+                  </if>
+              </ul>
+            </div>
+      </volist>
+<!--分页位置--> {$page}

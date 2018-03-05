@@ -1,0 +1,172 @@
+<include file="public/layout" />
+<body style="background-color: #FFF; overflow: auto;">
+<div id="append_parent"></div>
+<div id="ajaxwaitid"></div>
+<div class="page">
+  <div class="fixed-bar">
+    <div class="item-title"><a class="back" href="javascript:history.back();" title="返回列表"><i class="fa fa-arrow-circle-o-left"></i></a>
+      <div class="subject">
+        <h3>商品专区 - 添加专区</h3>
+      </div>
+    </div>
+  </div>
+  <div class="explanation" id="explanation">
+    <div class="title" id="checkZoom"><i class="fa fa-lightbulb-o"></i>
+      <h4 title="提示相关设置操作时应注意的要点">操作提示</h4>
+      <span id="explanationZoom" title="收起提示"></span>
+    </div>
+    <ul>
+      <li>温馨提示：商品专区用于绑定商品的销售区域，不同区域采用不同结算方式，请谨慎操作！</li>
+      <li>注意：以下所有比率值请填写0-100的整数数字！</li>
+      <li>注意：自消返佣比率+1/2/3级分销返佣比率+省市县镇区代理返佣比率不能超过100</li>
+      <li>注意：个人所得税+爱心基金+复消币+平台维护费不能超过100</li>
+    </ul>
+  </div>
+  <form action="{:U('Goods/addPrefecture')}" method="post" class="form-horizontal" id="prefecture_form">
+    <div class="ncap-form-default">
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane"><em>*</em>专区名称</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="名称" class="input-txt" name="name" value="{$prefecture_info.name}">
+          <span class="err" id="err_name" style="color:#F00; display:none;"></span>
+          <p class="notic"></p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">手机专区名称</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="手机分类名称" class="input-txt" name="mobile_name" value="{$prefecture_info.mobile_name}">
+          <span class="err" id="err_mobile_name" style="color:#F00; display:none;"></span>
+          <p class="notic"></p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">自消返佣比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="消费返佣比率" class="input-txt" name="self_rate" value="{$prefecture_info.self_rate}">
+          <span class="err" id="err_self_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">一级分销返佣比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="一级分销返佣比率" class="input-txt" name="first_rate" value="{$prefecture_info.first_rate}">
+          <span class="err" id="err_first_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">二级分销返佣比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="二级分销返佣比率" class="input-txt" name="second_rate" value="{$prefecture_info.second_rate}">
+          <span class="err" id="err_second_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">三级分销返佣比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="三级分销返佣比率" class="input-txt" name="third_rate" value="{$prefecture_info.third_rate}">
+          <span class="err" id="err_third_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">个人所得税比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="个人所得税比率" class="input-txt" name="personal_income_tax_rate" value="{$prefecture_info.personal_income_tax_rate}">
+          <span class="err" id="err_personal_income_tax_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">爱心基金比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="爱心基金比率" class="input-txt" name="love_rate" value="{$prefecture_info.love_rate}">
+          <span class="err" id="err_love_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">复消币比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="复消币比率" class="input-txt" name="revisit_pay_points_rate" value="{$prefecture_info.revisit_pay_points_rate}">
+          <span class="err" id="err_pay_points_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+      </dl>
+      <dl class="row">
+        <dt class="tit">
+          <label for="t_mane">平台维护费比率</label>
+        </dt>
+        <dd class="opt">
+          <input type="text" placeholder="平台维护费比率" class="input-txt" name="maintenance_cost_rate" value="{$prefecture_info.maintenance_cost_rate}">
+          <span class="err" id="err_maintenance_cost_rate" style="color:#F00; display:none;"></span>
+          <p class="notic">默认单位为：%</p>
+        </dd>
+      </dl>
+      <!--<dl class="row">-->
+        <!--<dt class="tit">-->
+          <!--<label for="t_mane">省级代理返佣比率</label>-->
+        <!--</dt>-->
+        <!--<dd class="opt">-->
+          <!--<input type="text" placeholder="省级代理返佣比率" class="input-txt" name="provincial_agent_rate" value="{$prefecture_info.provincial_agent_rate}">-->
+          <!--<span class="err" id="err_provincial_agent_rate" style="color:#F00; display:none;"></span>-->
+          <!--<p class="notic">默认单位为：%</p>-->
+        <!--</dd>-->
+      <!--</dl>-->
+      <!--<dl class="row">-->
+        <!--<dt class="tit">-->
+          <!--<label for="t_mane">市级代理返佣比率</label>-->
+        <!--</dt>-->
+        <!--<dd class="opt">-->
+          <!--<input type="text" placeholder="市级代理返佣比率" class="input-txt" name="city_agent_rate" value="{$prefecture_info.city_agent_rate}">-->
+          <!--<span class="err" id="err_city_agent_rate" style="color:#F00; display:none;"></span>-->
+          <!--<p class="notic">默认单位为：%</p>-->
+        <!--</dd>-->
+      <!--</dl>-->
+      <!--<dl class="row">-->
+        <!--<dt class="tit">-->
+          <!--<label for="t_mane">县级代理返佣比率</label>-->
+        <!--</dt>-->
+        <!--<dd class="opt">-->
+          <!--<input type="text" placeholder="县级代理返佣比率" class="input-txt" name="county_agent_rate" value="{$prefecture_info.county_agent_rate}">-->
+          <!--<span class="err" id="err_county_agent_rate" style="color:#F00; display:none;"></span>-->
+          <!--<p class="notic">默认单位为：%</p>-->
+        <!--</dd>-->
+      <!--</dl>-->
+      <!--<dl class="row">-->
+        <!--<dt class="tit">-->
+          <!--<label for="t_mane">镇区代理返佣比率</label>-->
+        <!--</dt>-->
+        <!--<dd class="opt">-->
+          <!--<input type="text" placeholder="镇级代理返佣比率" class="input-txt" name="town_agent_rate" value="{$prefecture_info.town_agent_rate}">-->
+          <!--<span class="err" id="err_town_agent_rate" style="color:#F00; display:none;"></span>-->
+          <!--<p class="notic">默认单位为：%</p>-->
+        <!--</dd>-->
+      <!--</dl>-->
+      <div class="bot"><a id="submitBtn" class="ncap-btn-big ncap-btn-green" href="JavaScript:void(0);" onClick="ajax_submit_form('prefecture_form','{:U('Goods/addEditPrefecture?is_ajax=1')}');">确认提交</a></div>
+    </div>
+    <input type="hidden" name="id" value="{$prefecture_info.id}">
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<include file="public/layout"/>
+<body style="background-color: rgb(255, 255, 255); overflow: auto; cursor: default;">
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title">
+            <div class="subject">
+                <h3>商品专区管理</h3>
+            </div>
+        </div>
+    </div>
+    <div id="explanation" class="explanation">
+        <div id="checkZoom" class="title"><i class="fa fa-lightbulb-o"></i>
+            <h4 title="提示相关设置操作时应注意的要点">操作提示</h4>
+            <span title="收起提示" id="explanationZoom"></span>
+        </div>
+        <ul>
+            <li>温馨提示：设置商品专区用于绑定商品的销售区域，不同区域采用不同结算方式</li>
+        </ul>
+    </div>
+    <form method="post">
+        <input type="hidden" value="ok" name="form_submit">
+        <div class="flexigrid">
+            <div class="mDiv">
+                <div class="ftitle">
+                    <h3>商品专区列表</h3>
+                    <h5></h5>
+                </div>
+            </div>
+            <div class="hDiv">
+                <div class="hDivBox">
+                    <table cellspacing="0" cellpadding="0">
+                        <thead>
+                        <tr>
+                            <th align="center" axis="col1" class="handle">
+                                <div style="text-align: center; width: 80px;">操作</div>
+                            </th>
+                            <th align="center" axis="col2">
+                                <div style="text-align: center; width: 60px;">分类id</div>
+                            </th>
+                            <th align="center" axis="col3">
+                                <div style="text-align: center; width: 80px;">分类名称</div>
+                            </th>
+                            <th align="center" axis="col4">
+                                <div style="text-align: center; width: 80px;">手机显示名称</div>
+                            </th>
+                            <th align="center" axis="col5">
+                                <div style="text-align: center; width: 80px;">自消返佣</div>
+                            </th>
+                            <th align="center" axis="col5">
+                                <div style="text-align: center; width: 80px;">一级分销返佣</div>
+                            </th>
+                            <th align="center" axis="col6">
+                                <div style="text-align: center; width: 80px;">二级分销返佣</div>
+                            </th>
+                            <th align="center" axis="col7">
+                                <div style="text-align: center; width: 80px;">三级分销返佣</div>
+                            </th>
+                            <!--<th align="center" axis="col7">-->
+                                <!--<div style="text-align: center; width: 80px;">省级代理返佣比率</div>-->
+                            <!--</th>-->
+                            <!--<th align="center" axis="col7">-->
+                                <!--<div style="text-align: center; width: 80px;">市级代理返佣比率</div>-->
+                            <!--</th>-->
+                            <!--<th align="center" axis="col7">-->
+                                <!--<div style="text-align: center; width: 80px;">县级代理返佣比率</div>-->
+                            <!--</th>-->
+                            <!--<th align="center" axis="col7">-->
+                                <!--<div style="text-align: center; width: 80px;">镇区代理返佣比率</div>-->
+                            <!--</th>-->
+                            <th align="center" axis="col7">
+                                <div style="text-align: center; width: 80px;">个人所得税</div>
+                            </th>
+                            <th align="center" axis="col7">
+                                <div style="text-align: center; width: 80px;">爱心基金</div>
+                            </th>
+                            <th align="center" axis="col7">
+                                <div style="text-align: center; width: 80px;">复消贝</div>
+                            </th>
+                            <th align="center" axis="col7">
+                                <div style="text-align: center; width: 80px;">平台维护费</div>
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="tDiv">
+                <div class="tDiv2">
+                    <div class="fbutton">
+                        <a href="{:U('Goods/addEditPrefecture')}">
+                            <div title="新增专区" class="add">
+                                <span><i class="fa fa-plus"></i>新增专区</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div style="height: auto;" class="bDiv" id="flexigrid" data-url="">
+                <table cellspacing="0" cellpadding="0" border="0" id="article_cat_table" class="flex-table autoht">
+                    <tbody id="treet1">
+                    <foreach name="prefecture_List" item="vo" key="k">
+                        <tr data-level="{$vo[level]}" parent_id_path="{$vo.parent_id_path}"
+                            class="parent_id_{$vo.parent_id}" nctype="0"
+                        <if condition="$vo[level] gt 1"> style="display:none;"</if>
+                        >
+                        <td class="handle">
+                            <div style="text-align:center;   min-width:150px !important; max-width:inherit !important;">
+                  <span style="margin-left:<?php echo ($vo[level] * 4); ?>em" class="btn"><em><i class="fa fa-cog"></i>设置<i
+                          class="arrow"></i></em>
+                  <ul>
+                    <li><a href="{:U('Goods/addEditPrefecture',array('id'=>$vo['id']))}">编辑分类信息</a></li>
+                    <!--<li><a href="{:U('Goods/delPrefecture',array('id'=>$vo['id']))})">删除当前分类</a></li>-->
+                  </ul>
+                  </span>
+                            </div>
+                        </td>
+                        <td class="sort">
+                            <div style="text-align: center; width: 60px;">{$vo.id}</div>
+                        </td>
+                        <td class="name">
+                            <div style="text-align: center; width: 80px;">
+                                <input type="text" value="{$vo.name}"
+                                       onblur="changeTableVal('goods_prefecture','id','{$vo.id}','name',this)"
+                                       style="text-align: left; width:70px;"/>
+                            </div>
+                        </td>
+                        <td class="name">
+                            <div style="text-align: left; width: 80px;">
+                                <input type="text" value="{$vo.mobile_name}"
+                                       onblur="changeTableVal('goods_prefecture','id','{$vo.id}','mobile_name',this)"
+                                       style="text-align: left; width:70px;"/>
+                            </div>
+                        </td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.self_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.first_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.second_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.third_rate}</div></td>
+                        <!--<td class="sort"><div style="text-align: center; width: 80px;">{$vo.provincial_agent_rate}</div></td>-->
+                        <!--<td class="sort"><div style="text-align: center; width: 80px;">{$vo.city_agent_rate}</div></td>-->
+                        <!--<td class="sort"><div style="text-align: center; width: 80px;">{$vo.county_agent_rate}</div></td>-->
+                        <!--<td class="sort"><div style="text-align: center; width: 80px;">{$vo.town_agent_rate}</div></td>-->
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.personal_income_tax_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.love_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.revisit_pay_points_rate}</div></td>
+                        <td class="sort"><div style="text-align: center; width: 80px;">{$vo.maintenance_cost_rate}</div></td>
+                        </tr>
+                    </foreach>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+<script>
+    $(document).ready(function () {
+        // 表格行点击选中切换
+        $('.bDiv > table>tbody >tr').click(function () {
+            $(this).toggleClass('trSelected');
+        });
+    });
+</script>
+</body>
+</html>

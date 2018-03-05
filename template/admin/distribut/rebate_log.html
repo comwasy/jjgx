@@ -1,0 +1,316 @@
+<include file="public/layout"/>
+<body style="background-color: rgb(255, 255, 255); overflow: auto; cursor: default; -moz-user-select: inherit;">
+<div id="append_parent"></div>
+<div id="ajaxwaitid"></div>
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title">
+            <div class="subject">
+                <h3>分成记录列表</h3>
+                <h5>分销关系管理</h5>
+            </div>
+        </div>
+    </div>
+    <!-- 操作说明 -->
+    <div id="explanation" class="explanation"
+         style="color: rgb(44, 188, 163); background-color: rgb(237, 251, 248); width: 99%; height: 100%;">
+        <div id="checkZoom" class="title"><i class="fa fa-lightbulb-o"></i>
+            <h4 title="提示相关设置操作时应注意的要点">操作提示</h4>
+            <span title="收起提示" id="explanationZoom" style="display: block;"></span>
+        </div>
+        <ul>
+            <li>点击"订单编号"查看订单详情</li>
+            <li>根据用户ID、订单编号和时间查询</li>
+        </ul>
+    </div>
+    <div class="flexigrid">
+        <div class="mDiv">
+            <div class="ftitle">
+                <h3>分成记录列表</h3>
+                <h5>(共{$pager->totalRows}条记录)</h5>
+            </div>
+            <div title="刷新数据" class="pReload"><i class="fa fa-refresh"></i></div>
+            <button style="line-height: 20px;float: left;" onclick="delrebatelog(this)" data-url="{:U('admin/distribut/delrebatelog')}">清除1天前未付款记录</button>
+            <form class="navbar-form form-inline" method="post"
+                  action="./index.php?m=Admin&amp;c=Distribut&amp;a=rebate_log"
+                  name="search-form2" id="search-form2">
+                <div class="sDiv">
+                    <div class="sDiv2">
+                        <input type="text" size="30" id="user_id" placeholder="获佣用户会员号" value="" name="mobile"
+                               class="qsbox">
+                    </div>
+                    <div class="sDiv2">
+                        <input type="text" size="30" id="order_sn" placeholder="订单编号" value="" name="order_sn"
+                               class="qsbox">
+                    </div>
+                    <div class="sDiv2">
+                        <input type="text" size="30" id="start_time" placeholder="生成日志开始时间" value="" name="start_time"
+                               class="qsbox">
+                    </div>
+                    <div class="sDiv2">
+                        <input type="text" size="30" id="end_time" placeholder="生成日志结束时间" value="" name="end_time"
+                               class="qsbox">
+                    </div>
+                    <div class="sDiv2">
+                        <select class="select" id="status" name="status">
+                            <option value="">全部</option>
+                            <option value="0">未付款</option>
+                            <option value="1">已付款</option>
+                            <option value="2">等待分成</option>
+                            <option value="3">已分成</option>
+                            <option value="4">已取消</option>
+                        </select>
+                    </div>
+                    <div class="sDiv2">
+                        <input type="submit" class="btn" value="搜索">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="hDiv">
+            <div class="hDivBox" id="ajax_return">
+                <table cellspacing="0" cellpadding="0">
+                    <thead>
+                    <tr>
+                        <th class="sign" axis="col0">
+                            <div style="width: 24px;"><i class="ico-check"></i></div>
+                        </th>
+                        <th align="left" abbr="order_sn" axis="col3" class="">
+                            <div style="text-align: left; width: 30px;" class="">ID</div>
+                        </th>
+                        <th align="left" abbr="consignee" axis="col4" class="">
+                            <div style="text-align: left; width: 100px;" class="">下单会员</div>
+                        </th>
+                        <th align="left" abbr="consignee" axis="col4" class="">
+                            <div style="text-align: left; width: 100px;" class="">获佣用户</div>
+                        </th>
+                        <th align="center" abbr="article_show" axis="col5" class="">
+                            <div style="text-align: center; width: 130px;" class="">订单编号</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 50px;" class="">获佣金额</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 50px;" class="">个人所得税</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 50px;" class="">爱心基金</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 50px;" class="">复消币</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 60px;" class="">平台维护费</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 60px;" class="">订单金额</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 60px;" class="">获佣用户级别</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 150px;" class="">获佣备注</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 160px;" class="">记录生成时间</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 90px;" class="">状态</div>
+                        </th>
+                        <th align="center" abbr="article_time" axis="col6" class="">
+                            <div style="text-align: center; width: 90px;" class="">手动操作</div>
+                        </th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="bDiv" style="height: auto;">
+            <div id="flexigrid" cellpadding="0" cellspacing="0" border="0">
+                <table cellspacing="0" cellpadding="0">
+                    <tbody>
+                    <empty name="list">
+                        <tr>
+                            <td class="no-data" align="center" axis="col0" colspan="50">
+                                <i class="fa fa-exclamation-circle"></i>没有符合条件的记录
+                            </td>
+                        </tr>
+                     <else/>
+                    <foreach name="list" item="v" key="k">
+                        <tr>
+                            <td class="sign" axis="col0">
+                                <div style="width: 24px;"><i class="ico-check"></i></div>
+                            </td>
+                            <td align="left" abbr="order_sn" axis="col3" class="">
+                                <div style="text-align: left; width: 30px;" class="">{$v.id}</div>
+                            </td>
+                            <td align="left" abbr="consignee" axis="col4" class="">
+                                <div style="text-align: left; width: 100px;" class="">
+                                    <a href="{:U('User/detail',array('id'=>$v.buy_user_id))}">
+                                        {$v.buy_user_mobile}
+                                    </a>
+                                </div>
+                            </td>
+                            <td align="left" abbr="consignee" axis="col4" class="">
+                                <div style="text-align: left; width: 100px;" class="">
+                                    <if condition="$v.user_mobile">
+                                        <a href="{:U('User/detail',array('mobile'=>$v.user_mobile))}">
+                                            {$v.user_mobile}
+                                        </a>
+                                    <else />
+                                        <a href="{:U('User/detail',array('mobile'=>$v.suppliers_phone))}">
+                                            {$v.suppliers_phone}
+                                        </a>
+                                    </if>
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_show" axis="col5" class="">
+                                <div style="text-align: center; width: 130px;" class="">
+                                    <a href="{:U('Order/detail',array('order_id'=>$v.order_id))}">
+                                        {$v.order_sn} </a>
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 50px;" class="">{$v.money}</div>
+                            </td>
+
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 50px;" class="">{$v.personal_income}</div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 50px;" class="">{$v.love}</div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 50px;" class="">{$v.pay_points}</div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 60px;" class="">{$v.maintenance_cost}</div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 60px;" class="">{$v.goods_price}</div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 60px;" class="">
+                                    {$lang['level_'.$v.level]}
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 150px;" class="">
+                                    {$lang[$v.rebate_type]}
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+
+                                <div style="text-align: center; width: 160px;" class="">
+                                    {$v.create_time|default=time()|date='Y-m-d H:i:s',###}
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+                                <div style="text-align: center; width: 90px;" class="">
+                                    <if condition="($v.status eq 0)">
+                                        未付款
+                                        <elseif condition="$v.status eq 1"/>
+                                        已付款
+                                        <elseif condition="($v.status eq 2)"/>
+                                        等待分成
+                                        <elseif condition="($v.status eq 3)"/>
+                                        已分成
+                                        <elseif condition="($v.status eq 4)"/>
+                                        已取消
+                                        <else>
+                                        非法状态
+                                    </if>
+                                </div>
+                            </td>
+                            <td align="center" abbr="article_time" axis="col6" class="">
+
+                                <div style="text-align: center; width: 160px;" class="">
+                                    <if condition="($v.status eq 0)">
+                                        买家未付款
+                                        <elseif condition="$v.status eq 1"/>
+                                        等待确认收货
+                                        <elseif condition="($v.status eq 2)"/>
+                                        <a href="{:U('Admin/Distribut/rebate_new',array('order_id'=>$v[order_id]))}">手动分红</a>
+                                        <elseif condition="($v.status eq 3)"/>
+                                        已分成
+                                        <elseif condition="($v.status eq 4)"/>
+                                        已取消
+                                        <else>非法状态
+                                    </if>
+                                </div>
+                            </td>
+                        </tr>
+                        </foreach>
+                    </empty>
+                    </tbody>
+                </table>
+            </div>
+            <div class="iDiv" style="display: none;"></div>
+        </div>
+        <!--分页位置-->
+        {$pager->show()}
+    </div>
+</div>
+<script type="text/javascript">
+    function delrebatelog(obj){
+        layer.confirm('确认删除？', {
+                btn: ['确定','取消'] //按钮
+            }, function(){
+                // 确定
+                $.ajax({
+                    type : 'post',
+                    url : $(obj).attr('data-url'),
+                    success : function(data){
+                        var v =  eval('('+data+')');
+                        layer.closeAll();
+                        if(v.status==1){
+                            layer.open({
+                                icon:1,
+                                title: '信息提示：',
+                                content: v.msg,
+                                yes: function(){
+                                    location.href = location.href;
+                                }
+                            });
+                        }else{
+                            layer.open({
+                                icon:2,
+                                title: '信息提示：',
+                                content: v.msg
+                            });
+                        }
+                    }
+                })
+            }
+        );
+    }
+
+    $(document).ready(function () {
+
+        // 点击刷新数据
+        $('.fa-refresh').click(function () {
+            location.href = location.href;
+        });
+
+        $('#start_time').layDate(1);
+        $('#end_time').layDate(1);
+
+        $('.ico-check ', '.hDivBox').click(function () {
+            $('tr', '.hDivBox').toggleClass('trSelected', function (index, currentclass) {
+                var hasClass = $(this).hasClass('trSelected');
+                $('tr', '#flexigrid').each(function () {
+                    if (hasClass) {
+                        $(this).addClass('trSelected');
+                    } else {
+                        $(this).removeClass('trSelected');
+                    }
+                });
+            });
+        });
+    });
+
+
+</script>
+
+</body>
+</html>

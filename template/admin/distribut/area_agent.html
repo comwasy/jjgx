@@ -1,0 +1,92 @@
+<include file="public/layout" />
+<body style="background-color: #FFF; overflow: auto;">
+<div id="append_parent"></div>
+<div id="ajaxwaitid"></div>
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title"><a class="back" href="javascript:history.back();" title="返回列表"><i class="fa fa-arrow-circle-o-left"></i></a>
+            <div class="subject">
+                <h3>区域代理商管理 - 添加</h3>
+            </div>
+        </div>
+    </div>
+    <div class="explanation" id="explanation">
+        <div class="title" id="checkZoom"><i class="fa fa-lightbulb-o"></i>
+            <h4 title="提示相关设置操作时应注意的要点">操作提示</h4>
+            <span id="explanationZoom" title="收起提示"></span>
+        </div>
+        <ul>
+            <li>温馨提示：</li>
+        </ul>
+    </div>
+    <form action="{:U('Distribut/addEditAreaAgent')}" method="post" class="form-horizontal" id="area_agent_form">
+        <div class="ncap-form-default">
+            <dl class="row">
+                <dt class="tit">
+                    <label for="t_mane"><em>*</em>代理区域</label>
+                </dt>
+                <dd class="opt">
+                    <select class="di-bl fl seauii" name="province" id="province" onChange="get_city(this,0)">
+                        <option value="0">请选择</option>
+                        <volist name="province" id="p">
+                            <option <if condition="$area_agent_info['province'] eq $p['id']">selected</if>  value="{$p.id}">{$p.name}</option>
+                        </volist>
+                    </select>
+
+                    <select class="di-bl fl seauii" name="city" id="city" onChange="get_area(this)">
+                        <option  value="0">请选择</option>
+                        <volist name="city" id="p">
+                            <option <if condition="$area_agent_info['city'] eq $p['id']">selected</if>  value="{$p.id}">{$p.name}</option>
+                        </volist>
+                    </select>
+
+                    <select class="di-bl fl seauii" name="district" id="district" onChange="get_twon(this)" <if condition="$area_agent_info['district'] gt 0 ">style="display:block;"<else/>style="display:none;"</if>>
+                        <option  value="0">请选择</option>
+                        <volist name="district" id="p">
+                            <option <if condition="$area_agent_info['district'] eq $p['id']">selected</if>  value="{$p.id}">{$p.name}</option>
+                        </volist>
+                    </select>
+
+                    <select class="di-bl fl seauii" name="twon" id="twon" <if condition="$area_agent_info['twon'] gt 0 ">style="display:block;"<else/>style="display:none;"</if>>
+                        <option  value="0">请选择</option>
+                        <volist name="twon" id="p">
+                            <option <if condition="$area_agent_info['twon'] eq $p['id']">selected</if>  value="{$p.id}">{$p.name}</option>
+                        </volist>
+                    </select>
+                    <span class="err" id="err_area_id" style="color:#F00; display:none;"></span>
+                    <p class="notic"></p>
+                </dd>
+            </dl>
+            <dl class="row">
+                <dt class="tit">
+                    <label for="t_mane"><em>*</em>代理区域类型</label>
+                </dt>
+                <dd class="opt">
+                    <select class="di-bl fl seauii" name="type" id="type"">
+                        <option value="">请选择</option>
+                        <option <if condition="$area_agent_info['type'] eq 1">selected</if>  value="1">镇区代理</option>
+                        <option <if condition="$area_agent_info['type'] eq 2">selected</if>  value="2">市县代理</option>
+                        <option <if condition="$area_agent_info['type'] eq 3">selected</if>  value="3">省级代理</option>
+                    </select>
+                    <span class="err" id="err_type" style="color:#F00; display:none;"></span>
+                    <p class="notic"></p>
+                </dd>
+            </dl>
+            <dl class="row">
+                <dt class="tit">
+                    <label for="t_mane"><em>*</em>代理商会员号</label>
+                </dt>
+                <dd class="opt">
+                    <input type="text" placeholder="代理商会员号" class="input-txt" name="mobile" value="{$area_agent_info.mobile}">
+                    <span class="err" id="err_mobile" style="color:#F00; display:none;"></span>
+                    <p class="notic"></p>
+                </dd>
+            </dl>
+            <div class="bot"><a id="submitBtn" class="ncap-btn-big ncap-btn-green" href="JavaScript:void(0);" onClick="ajax_submit_form('area_agent_form','{:U('Distribut/addEditAreaAgent?is_ajax=1')}');">确认提交</a></div>
+        </div>
+        <input type="hidden" name="id" value="{$area_agent_info.id}">
+    </form>
+</div>
+</body>
+<script src="__PUBLIC__/js/global.js"></script>
+</html>

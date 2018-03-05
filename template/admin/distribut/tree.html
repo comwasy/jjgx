@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Apple devices fullscreen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Apple devices fullscreen -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="./tree_files/main.css" rel="stylesheet" type="text/css">
+    <link href="./tree_files/page.css" rel="stylesheet" type="text/css">
+    <link href="./tree_files/font-awesome.min.css" rel="stylesheet">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="/public/static/font/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    <link href="./tree_files/jquery-ui.min.css" rel="stylesheet" type="text/css">
+    <link href="./tree_files/perfect-scrollbar.min.css" rel="stylesheet" type="text/css">
+    <style type="text/css">html, body {
+        overflow: visible;
+    }</style>
+    <script type="text/javascript" src="./tree_files/jquery.js"></script>
+    <script type="text/javascript" src="./tree_files/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="./tree_files/layer.js"></script>
+    <link rel="stylesheet" href="./tree_files/layer.css" id="layuicss-skinlayercss">
+    <!-- 弹窗js 参考文档 http://layer.layui.com/-->
+    <script type="text/javascript" src="./tree_files/admin.js"></script>
+    <script type="text/javascript" src="./tree_files/jquery.validation.min.js"></script>
+    <script type="text/javascript" src="./tree_files/common.js"></script>
+    <script type="text/javascript" src="./tree_files/perfect-scrollbar.min.js"></script>
+    <script type="text/javascript" src="./tree_files/jquery.mousewheel.js"></script>
+    <script src="./tree_files/myFormValidate.js"></script>
+    <script src="./tree_files/myAjax2.js"></script>
+    <script src="./tree_files/global.js"></script>
+    <script type="text/javascript">
+        function delfunc(obj) {
+            layer.confirm('确认删除？', {
+                        btn: ['确定', '取消'] //按钮
+                    }, function () {
+                        // 确定
+                        $.ajax({
+                            type: 'post',
+                            url: $(obj).attr('data-url'),
+                            data: {act: 'del', del_id: $(obj).attr('data-id')},
+                            dataType: 'json',
+                            success: function (data) {
+                                layer.closeAll();
+                                if (data == 1) {
+                                    layer.msg('操作成功', {icon: 1});
+                                    $(obj).parent().parent().parent().remove();
+                                } else {
+                                    layer.msg(data, {icon: 2, time: 2000});
+                                }
+                            }
+                        })
+                    }, function (index) {
+                        layer.close(index);
+                        return false;// 取消
+                    }
+            );
+        }
+
+        function selectAll(name, obj) {
+            $('input[name*=' + name + ']').prop('checked', $(obj).checked);
+        }
+
+        function get_help(obj) {
+
+            window.open("http://www.hwz315.com/");
+            return false;
+
+            layer.open({
+                type: 2,
+                title: '帮助手册',
+                shadeClose: true,
+                shade: 0.3,
+                area: ['70%', '80%'],
+                content: $(obj).attr('data-url'),
+            });
+        }
+
+        function delAll(obj, name) {
+            var a = [];
+            $('input[name*=' + name + ']').each(function (i, o) {
+                if ($(o).is(':checked')) {
+                    a.push($(o).val());
+                }
+            })
+            if (a.length == 0) {
+                layer.alert('请选择删除项', {icon: 2});
+                return;
+            }
+            layer.confirm('确认删除？', {btn: ['确定', '取消']}, function () {
+                        $.ajax({
+                            type: 'get',
+                            url: $(obj).attr('data-url'),
+                            data: {act: 'del', del_id: a},
+                            dataType: 'json',
+                            success: function (data) {
+                                layer.closeAll();
+                                if (data == 1) {
+                                    layer.msg('操作成功', {icon: 1});
+                                    $('input[name*=' + name + ']').each(function (i, o) {
+                                        if ($(o).is(':checked')) {
+                                            $(o).parent().parent().remove();
+                                        }
+                                    })
+                                } else {
+                                    layer.msg(data, {icon: 2, time: 2000});
+                                }
+                            }
+                        })
+                    }, function (index) {
+                        layer.close(index);
+                        return false;// 取消
+                    }
+            );
+        }
+
+        /**
+         * 全选
+         * @param obj
+         */
+        function checkAllSign(obj) {
+            $(obj).toggleClass('trSelected');
+            if ($(obj).hasClass('trSelected')) {
+                $('#flexigrid > table>tbody >tr').addClass('trSelected');
+            } else {
+                $('#flexigrid > table>tbody >tr').removeClass('trSelected');
+            }
+        }
+        /**
+         * 批量公共操作（删，改）
+         * @returns {boolean}
+         */
+        function publicHandleAll(type) {
+            var ids = '';
+            $('#flexigrid .trSelected').each(function (i, o) {
+//            ids.push($(o).data('id'));
+                ids += $(o).data('id') + ',';
+            });
+            if (ids == '') {
+                layer.msg('至少选择一项', {icon: 2, time: 2000});
+                return false;
+            }
+            publicHandle(ids, type); //调用删除函数
+        }
+        /**
+         * 公共操作（删，改）
+         * @param type
+         * @returns {boolean}
+         */
+        function publicHandle(ids, handle_type) {
+            layer.confirm('确认当前操作？', {
+                        btn: ['确定', '取消'] //按钮
+                    }, function () {
+                        // 确定
+                        $.ajax({
+                            url: $('#flexigrid').data('url'),
+                            type: 'post',
+                            data: {ids: ids, type: handle_type},
+                            dataType: 'JSON',
+                            success: function (data) {
+                                layer.closeAll();
+                                if (data.status == 1) {
+                                    layer.msg(data.msg, {icon: 1, time: 2000}, function () {
+                                        location.href = data.url;
+                                    });
+                                } else {
+                                    layer.msg(data.msg, {icon: 2, time: 2000});
+                                }
+                            }
+                        });
+                    }, function (index) {
+                        layer.close(index);
+                    }
+            );
+        }
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="./tree_files/style.css">
+    <style type="text/css">
+        [class^="icon-"], [class*=" icon-"] {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-top: 1px;
+            line-height: 14px;
+            vertical-align: text-top;
+            background-image: url("/public/bootstrap//img/glyphicons-halflings.png");
+            background-position: 14px 14px;
+            background-repeat: no-repeat;
+        }
+
+        .icon-folder-open {
+            width: 16px;
+            background-position: -408px -120px;
+        }
+
+        .icon-minus-sign {
+            background-position: -24px -96px;
+        }
+
+        .icon-plus-sign {
+            background-position: 0 -96px;
+        }
+
+        .icon-leaf {
+            background-position: -48px -120px;
+        }
+
+        .tree li:last-child::before {
+            height: 25px;
+        }
+
+        ul {
+            padding: 0 40px;
+        }
+
+        .tree_span {
+            cursor: pointer;
+        }
+
+        .tree {
+            padding-left: 0;
+        }
+
+        .tree > ul {
+            padding-left: 19px;
+        }
+    </style>
+</head>
+<!--include file="public/min-header"/-->
+
+
+<body style="background-color: #FFF; overflow: auto;">
+<div id="toolTipLayer"
+     style="position: absolute; z-index: 9999; display: none; visibility: visible; left: 95px; top: 573px;"></div>
+<div id="append_parent"></div>
+<div id="ajaxwaitid"></div>
+<div class="page">
+    <div class="fixed-bar">
+        <div class="item-title"><a class="back" href="javascript:history.back();" title="微信公众号配置"><i
+                class="fa fa-arrow-circle-o-left"></i></a>
+            <div class="subject">
+                <h3>分销关系</h3>
+                <h5>查看代理商层级关系</h5>
+            </div>
+        </div>
+    </div>
+    <div class="flexigrid">
+        <div class="mDiv" style="border-bottom:0px">
+            <form class="navbar-form form-inline"
+                  action="http://demo5.tp-shop.cn/index.php?m=Admin&amp;c=Distribut&amp;a=tree" method="post"
+                  role="search">
+                <div class="sDiv" style="float:left; ">
+                    <div class="sDiv2">
+                        <input type="text" size="30" id="user_id" placeholder="上级id" name="user_id" class="qsbox">
+                    </div>
+                    <div class="sDiv2">
+                        <input type="submit" class="btn" value="搜索">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="tree well">
+        <ul>
+            <li>
+				<span class="tree_span" data-id="24">
+	                              	<i class="icon-folder-open"></i>
+	                                  24:
+	                                  	                                   当然想	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="175">
+	                              	<i class="icon-folder-open"></i>
+	                                  175:
+	                                  	                                   搜豹公司-IT宇宙人	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="181">
+	                              	<i class="icon-folder-open"></i>
+	                                  181:
+	                                  	                                   海天一色	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="182">
+	                              	<i class="icon-folder-open"></i>
+	                                  182:
+	                                  	                                   华章酱～	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="184">
+	                              	<i class="icon-folder-open"></i>
+	                                  184:
+	                                  	                                   鹏少	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="185">
+	                              	<i class="icon-folder-open"></i>
+	                                  185:
+	                                  	                                   IMB	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="211">
+	                              	<i class="icon-folder-open"></i>
+	                                  211:
+	                                  	                                   尘封	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="212">
+	                              	<i class="icon-folder-open"></i>
+	                                  212:
+	                                  	                                   当燃	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="215">
+	                              	<i class="icon-folder-open"></i>
+	                                  215:
+	                                  	                                   赖维明	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="229">
+	                              	<i class="icon-folder-open"></i>
+	                                  229:
+	                                  	                                   董董	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="241">
+	                              	<i class="icon-folder-open"></i>
+	                                  241:
+	                                  	                                   雷龙	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="250">
+	                              	<i class="icon-folder-open"></i>
+	                                  250:
+	                                  	                                   陈刚	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="259">
+	                              	<i class="icon-folder-open"></i>
+	                                  259:
+	                                  	                                   @yaya 	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="266">
+	                              	<i class="icon-folder-open"></i>
+	                                  266:
+	                                  	                                   天到	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="279">
+	                              	<i class="icon-folder-open"></i>
+	                                  279:
+	                                  	                                   未流星	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="288">
+	                              	<i class="icon-folder-open"></i>
+	                                  288:
+	                                  	                                   	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="289">
+	                              	<i class="icon-folder-open"></i>
+	                                  289:
+	                                  	                                   Hamsing	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="308">
+	                              	<i class="icon-folder-open"></i>
+	                                  308:
+	                                  	                                   nkm85	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="310">
+	                              	<i class="icon-folder-open"></i>
+	                                  310:
+	                                  	                                   宝宝曦曦	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="326">
+	                              	<i class="icon-folder-open"></i>
+	                                  326:
+	                                  	                                   lyndon	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="339">
+	                              	<i class="icon-folder-open"></i>
+	                                  339:
+	                                  	                                   ◎_◎	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="344">
+	                              	<i class="icon-folder-open"></i>
+	                                  344:
+	                                  	                                   熊熊一直在	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="365">
+	                              	<i class="icon-folder-open"></i>
+	                                  365:
+	                                  	                                   邢健	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="377">
+	                              	<i class="icon-folder-open"></i>
+	                                  377:
+	                                  	                                   微信用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="379">
+	                              	<i class="icon-folder-open"></i>
+	                                  379:
+	                                  	                                   信源、叶家良	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="382">
+	                              	<i class="icon-folder-open"></i>
+	                                  382:
+	                                  	                                   吃开心果的虫子	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="385">
+	                              	<i class="icon-folder-open"></i>
+	                                  385:
+	                                  	                                   18932020010	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="424">
+	                              	<i class="icon-folder-open"></i>
+	                                  424:
+	                                  	                                   张东	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="469">
+	                              	<i class="icon-folder-open"></i>
+	                                  469:
+	                                  	                                   A毛毛	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="472">
+	                              	<i class="icon-folder-open"></i>
+	                                  472:
+	                                  	                                   A0杜桥东部人才	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="477">
+	                              	<i class="icon-folder-open"></i>
+	                                  477:
+	                                  	                                   杀猪刀	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="489">
+	                              	<i class="icon-folder-open"></i>
+	                                  489:
+	                                  	                                   lz1024	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="495">
+	                              	<i class="icon-folder-open"></i>
+	                                  495:
+	                                  	                                   凯旋门付强	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="504">
+	                              	<i class="icon-folder-open"></i>
+	                                  504:
+	                                  	                                   袁娟	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="508">
+	                              	<i class="icon-folder-open"></i>
+	                                  508:
+	                                  	                                   18900000000	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="515">
+	                              	<i class="icon-folder-open"></i>
+	                                  515:
+	                                  	                                   随	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="534">
+	                              	<i class="icon-folder-open"></i>
+	                                  534:
+	                                  	                                   季末	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="538">
+	                              	<i class="icon-folder-open"></i>
+	                                  538:
+	                                  	                                   Zavier · 张威	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="541">
+	                              	<i class="icon-folder-open"></i>
+	                                  541:
+	                                  	                                   火星奔奔。。	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="549">
+	                              	<i class="icon-folder-open"></i>
+	                                  549:
+	                                  	                                   yancy	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="554">
+	                              	<i class="icon-folder-open"></i>
+	                                  554:
+	                                  	                                   Washington	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="572">
+	                              	<i class="icon-folder-open"></i>
+	                                  572:
+	                                  	                                   葸水空空	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="573">
+	                              	<i class="icon-folder-open"></i>
+	                                  573:
+	                                  	                                   itworker	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="619">
+	                              	<i class="icon-folder-open"></i>
+	                                  619:
+	                                  	                                   回车键	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="638">
+	                              	<i class="icon-folder-open"></i>
+	                                  638:
+	                                  	                                   W	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="641">
+	                              	<i class="icon-folder-open"></i>
+	                                  641:
+	                                  	                                   A王栋 一百牛人资源整合	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="649">
+	                              	<i class="icon-folder-open"></i>
+	                                  649:
+	                                  	                                   18621719404	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="650">
+	                              	<i class="icon-folder-open"></i>
+	                                  650:
+	                                  	                                   。	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="653">
+	                              	<i class="icon-folder-open"></i>
+	                                  653:
+	                                  	                                   ye	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="655">
+	                              	<i class="icon-folder-open"></i>
+	                                  655:
+	                                  	                                   13728846099	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="664">
+	                              	<i class="icon-folder-open"></i>
+	                                  664:
+	                                  	                                   聚闲科技-邱禹鹏	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="665">
+	                              	<i class="icon-folder-open"></i>
+	                                  665:
+	                                  	                                   ArH	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="687">
+	                              	<i class="icon-folder-open"></i>
+	                                  687:
+	                                  	                                   吴远军	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="721">
+	                              	<i class="icon-folder-open"></i>
+	                                  721:
+	                                  	                                   定律	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="732">
+	                              	<i class="icon-folder-open"></i>
+	                                  732:
+	                                  	                                   知心语	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="733">
+	                              	<i class="icon-folder-open"></i>
+	                                  733:
+	                                  	                                   Yù Míng	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="734">
+	                              	<i class="icon-folder-open"></i>
+	                                  734:
+	                                  	                                   余小渔	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="736">
+	                              	<i class="icon-folder-open"></i>
+	                                  736:
+	                                  	                                   青国平	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="752">
+	                              	<i class="icon-folder-open"></i>
+	                                  752:
+	                                  	                                   无所WEI	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="757">
+	                              	<i class="icon-folder-open"></i>
+	                                  757:
+	                                  	                                    人生	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="768">
+	                              	<i class="icon-folder-open"></i>
+	                                  768:
+	                                  	                                   土豆酱	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="773">
+	                              	<i class="icon-folder-open"></i>
+	                                  773:
+	                                  	                                   张志阳	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="796">
+	                              	<i class="icon-folder-open"></i>
+	                                  796:
+	                                  	                                   冯梦健	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="800">
+	                              	<i class="icon-folder-open"></i>
+	                                  800:
+	                                  	                                   天涯	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="810">
+	                              	<i class="icon-folder-open"></i>
+	                                  810:
+	                                  	                                   xxxXi	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="812">
+	                              	<i class="icon-folder-open"></i>
+	                                  812:
+	                                  	                                   瑋	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="813">
+	                              	<i class="icon-folder-open"></i>
+	                                  813:
+	                                  	                                   成龙	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="817">
+	                              	<i class="icon-folder-open"></i>
+	                                  817:
+	                                  	                                   七张机	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="820">
+	                              	<i class="icon-folder-open"></i>
+	                                  820:
+	                                  	                                   伟新	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="824">
+	                              	<i class="icon-folder-open"></i>
+	                                  824:
+	                                  	                                   陈菇凉	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="826">
+	                              	<i class="icon-folder-open"></i>
+	                                  826:
+	                                  	                                   Jenny	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="827">
+	                              	<i class="icon-folder-open"></i>
+	                                  827:
+	                                  	                                   家和万事兴侯进军	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="828">
+	                              	<i class="icon-folder-open"></i>
+	                                  828:
+	                                  	                                   玄玄	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="829">
+	                              	<i class="icon-folder-open"></i>
+	                                  829:
+	                                  	                                   马文腾	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="857">
+	                              	<i class="icon-folder-open"></i>
+	                                  857:
+	                                  	                                   弓虽人	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="867">
+	                              	<i class="icon-folder-open"></i>
+	                                  867:
+	                                  	                                   龙腾九州	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="891">
+	                              	<i class="icon-folder-open"></i>
+	                                  891:
+	                                  	                                   刘瑞林	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="914">
+	                              	<i class="icon-folder-open"></i>
+	                                  914:
+	                                  	                                   独孤志	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="915">
+	                              	<i class="icon-folder-open"></i>
+	                                  915:
+	                                  	                                   我是一只小小小小鸟	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="916">
+	                              	<i class="icon-folder-open"></i>
+	                                  916:
+	                                  	                                   陈大人	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="917">
+	                              	<i class="icon-folder-open"></i>
+	                                  917:
+	                                  	                                   李巍	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="920">
+	                              	<i class="icon-folder-open"></i>
+	                                  920:
+	                                  	                                   演奏家	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="921">
+	                              	<i class="icon-folder-open"></i>
+	                                  921:
+	                                  	                                   叶凡	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="937">
+	                              	<i class="icon-folder-open"></i>
+	                                  937:
+	                                  	                                   赵 逗	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="944">
+	                              	<i class="icon-folder-open"></i>
+	                                  944:
+	                                  	                                   穆沂华	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="945">
+	                              	<i class="icon-folder-open"></i>
+	                                  945:
+	                                  	                                   A网络托管【吴良针】	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="970">
+	                              	<i class="icon-folder-open"></i>
+	                                  970:
+	                                  	                                   无敌小青年	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1001">
+	                              	<i class="icon-folder-open"></i>
+	                                  1001:
+	                                  	                                   小志	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1005">
+	                              	<i class="icon-folder-open"></i>
+	                                  1005:
+	                                  	                                   MarcoRen	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1021">
+	                              	<i class="icon-folder-open"></i>
+	                                  1021:
+	                                  	                                   128乐图	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1025">
+	                              	<i class="icon-folder-open"></i>
+	                                  1025:
+	                                  	                                   A0	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1034">
+	                              	<i class="icon-folder-open"></i>
+	                                  1034:
+	                                  	                                   段贤根	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1051">
+	                              	<i class="icon-folder-open"></i>
+	                                  1051:
+	                                  	                                   A@舒慎林	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1052">
+	                              	<i class="icon-folder-open"></i>
+	                                  1052:
+	                                  	                                   王琦	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1054">
+	                              	<i class="icon-folder-open"></i>
+	                                  1054:
+	                                  	                                   15128853663	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1059">
+	                              	<i class="icon-folder-open"></i>
+	                                  1059:
+	                                  	                                   ！！！	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1069">
+	                              	<i class="icon-folder-open"></i>
+	                                  1069:
+	                                  	                                   随风滴滴答答	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1086">
+	                              	<i class="icon-folder-open"></i>
+	                                  1086:
+	                                  	                                   萱萱	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1102">
+	                              	<i class="icon-folder-open"></i>
+	                                  1102:
+	                                  	                                   深蓝	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1110">
+	                              	<i class="icon-folder-open"></i>
+	                                  1110:
+	                                  	                                   liang	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1144">
+	                              	<i class="icon-folder-open"></i>
+	                                  1144:
+	                                  	                                   空山鸟语	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1149">
+	                              	<i class="icon-folder-open"></i>
+	                                  1149:
+	                                  	                                   张杰	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1170">
+	                              	<i class="icon-folder-open"></i>
+	                                  1170:
+	                                  	                                   何某人	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1175">
+	                              	<i class="icon-folder-open"></i>
+	                                  1175:
+	                                  	                                   道録	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1181">
+	                              	<i class="icon-folder-open"></i>
+	                                  1181:
+	                                  	                                   Superman・㉨・	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1228">
+	                              	<i class="icon-folder-open"></i>
+	                                  1228:
+	                                  	                                   小米	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1230">
+	                              	<i class="icon-folder-open"></i>
+	                                  1230:
+	                                  	                                   Judy	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1237">
+	                              	<i class="icon-folder-open"></i>
+	                                  1237:
+	                                  	                                   Free	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1255">
+	                              	<i class="icon-folder-open"></i>
+	                                  1255:
+	                                  	                                   无边风月	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1274">
+	                              	<i class="icon-folder-open"></i>
+	                                  1274:
+	                                  	                                   null	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1278">
+	                              	<i class="icon-folder-open"></i>
+	                                  1278:
+	                                  	                                   纯子	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1306">
+	                              	<i class="icon-folder-open"></i>
+	                                  1306:
+	                                  	                                   往年	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1312">
+	                              	<i class="icon-folder-open"></i>
+	                                  1312:
+	                                  	                                   夏初临	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1340">
+	                              	<i class="icon-folder-open"></i>
+	                                  1340:
+	                                  	                                   碎成粉末	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1351">
+	                              	<i class="icon-folder-open"></i>
+	                                  1351:
+	                                  	                                   闪闪	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1354">
+	                              	<i class="icon-folder-open"></i>
+	                                  1354:
+	                                  	                                   谢主隆恩	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1360">
+	                              	<i class="icon-folder-open"></i>
+	                                  1360:
+	                                  	                                   旁观者	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1384">
+	                              	<i class="icon-folder-open"></i>
+	                                  1384:
+	                                  	                                   变	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1385">
+	                              	<i class="icon-folder-open"></i>
+	                                  1385:
+	                                  	                                   秦鹏「微信定制开发」	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1394">
+	                              	<i class="icon-folder-open"></i>
+	                                  1394:
+	                                  	                                   我是肖宇旦	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1397">
+	                              	<i class="icon-folder-open"></i>
+	                                  1397:
+	                                  	                                   mr.	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1399">
+	                              	<i class="icon-folder-open"></i>
+	                                  1399:
+	                                  	                                   吴锋	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1419">
+	                              	<i class="icon-folder-open"></i>
+	                                  1419:
+	                                  	                                   杨海涛	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1431">
+	                              	<i class="icon-folder-open"></i>
+	                                  1431:
+	                                  	                                   褚国豪	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1433">
+	                              	<i class="icon-folder-open"></i>
+	                                  1433:
+	                                  	                                   wangfeihu	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1439">
+	                              	<i class="icon-folder-open"></i>
+	                                  1439:
+	                                  	                                   冰冰	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1441">
+	                              	<i class="icon-folder-open"></i>
+	                                  1441:
+	                                  	                                   空城只因旧梦在-	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1451">
+	                              	<i class="icon-folder-open"></i>
+	                                  1451:
+	                                  	                                   张涵宇	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1454">
+	                              	<i class="icon-folder-open"></i>
+	                                  1454:
+	                                  	                                   鬼啊！还小	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1461">
+	                              	<i class="icon-folder-open"></i>
+	                                  1461:
+	                                  	                                   小溪	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1472">
+	                              	<i class="icon-folder-open"></i>
+	                                  1472:
+	                                  	                                   张学功	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1474">
+	                              	<i class="icon-folder-open"></i>
+	                                  1474:
+	                                  	                                   无中生有	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1478">
+	                              	<i class="icon-folder-open"></i>
+	                                  1478:
+	                                  	                                   l	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1482">
+	                              	<i class="icon-folder-open"></i>
+	                                  1482:
+	                                  	                                   lucifer	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1506">
+	                              	<i class="icon-folder-open"></i>
+	                                  1506:
+	                                  	                                   呆呆	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1518">
+	                              	<i class="icon-folder-open"></i>
+	                                  1518:
+	                                  	                                   王安	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1537">
+	                              	<i class="icon-folder-open"></i>
+	                                  1537:
+	                                  	                                   承	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1577">
+	                              	<i class="icon-folder-open"></i>
+	                                  1577:
+	                                  	                                   老邓	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1594">
+	                              	<i class="icon-folder-open"></i>
+	                                  1594:
+	                                  	                                   春春	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1603">
+	                              	<i class="icon-folder-open"></i>
+	                                  1603:
+	                                  	                                   星星之火：可以燎原：	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1614">
+	                              	<i class="icon-folder-open"></i>
+	                                  1614:
+	                                  	                                   VIP阿巨	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1619">
+	                              	<i class="icon-folder-open"></i>
+	                                  1619:
+	                                  	                                   老黄同志	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1621">
+	                              	<i class="icon-folder-open"></i>
+	                                  1621:
+	                                  	                                   杨笑	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1640">
+	                              	<i class="icon-folder-open"></i>
+	                                  1640:
+	                                  	                                   海批渔具	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1645">
+	                              	<i class="icon-folder-open"></i>
+	                                  1645:
+	                                  	                                   Ten(萍)一小熊贝斯	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1646">
+	                              	<i class="icon-folder-open"></i>
+	                                  1646:
+	                                  	                                   JIA	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1647">
+	                              	<i class="icon-folder-open"></i>
+	                                  1647:
+	                                  	                                   Jiangxiaobai	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1651">
+	                              	<i class="icon-folder-open"></i>
+	                                  1651:
+	                                  	                                   Gjr	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1658">
+	                              	<i class="icon-folder-open"></i>
+	                                  1658:
+	                                  	                                   阿喵~	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1665">
+	                              	<i class="icon-folder-open"></i>
+	                                  1665:
+	                                  	                                   Bing	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1684">
+	                              	<i class="icon-folder-open"></i>
+	                                  1684:
+	                                  	                                   泛白的记忆	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1688">
+	                              	<i class="icon-folder-open"></i>
+	                                  1688:
+	                                  	                                   军	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1693">
+	                              	<i class="icon-folder-open"></i>
+	                                  1693:
+	                                  	                                   Miriam	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1707">
+	                              	<i class="icon-folder-open"></i>
+	                                  1707:
+	                                  	                                   二老	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1744">
+	                              	<i class="icon-folder-open"></i>
+	                                  1744:
+	                                  	                                   娜	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1748">
+	                              	<i class="icon-folder-open"></i>
+	                                  1748:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1749">
+	                              	<i class="icon-folder-open"></i>
+	                                  1749:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1750">
+	                              	<i class="icon-folder-open"></i>
+	                                  1750:
+	                                  	                                   裴立雄15810075996	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1775">
+	                              	<i class="icon-folder-open"></i>
+	                                  1775:
+	                                  	                                   小郭	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1778">
+	                              	<i class="icon-folder-open"></i>
+	                                  1778:
+	                                  	                                   wolfgm	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1784">
+	                              	<i class="icon-folder-open"></i>
+	                                  1784:
+	                                  	                                   Sealeo	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1800">
+	                              	<i class="icon-folder-open"></i>
+	                                  1800:
+	                                  	                                   AO绿色健木	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1810">
+	                              	<i class="icon-folder-open"></i>
+	                                  1810:
+	                                  	                                   alive	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1814">
+	                              	<i class="icon-folder-open"></i>
+	                                  1814:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1815">
+	                              	<i class="icon-folder-open"></i>
+	                                  1815:
+	                                  	                                   885672158@qq.com	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1836">
+	                              	<i class="icon-folder-open"></i>
+	                                  1836:
+	                                  	                                   太平洋警察	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1848">
+	                              	<i class="icon-folder-open"></i>
+	                                  1848:
+	                                  	                                    克罗地亚狂想曲	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1854">
+	                              	<i class="icon-folder-open"></i>
+	                                  1854:
+	                                  	                                   傅祥	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1858">
+	                              	<i class="icon-folder-open"></i>
+	                                  1858:
+	                                  	                                   Luke	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1866">
+	                              	<i class="icon-folder-open"></i>
+	                                  1866:
+	                                  	                                   a0小熊	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1870">
+	                              	<i class="icon-folder-open"></i>
+	                                  1870:
+	                                  	                                   王嘉	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1871">
+	                              	<i class="icon-folder-open"></i>
+	                                  1871:
+	                                  	                                   真诚	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1872">
+	                              	<i class="icon-folder-open"></i>
+	                                  1872:
+	                                  	                                   一叶	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1873">
+	                              	<i class="icon-folder-open"></i>
+	                                  1873:
+	                                  	                                   张航艳	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1874">
+	                              	<i class="icon-folder-open"></i>
+	                                  1874:
+	                                  	                                   任晓博	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1875">
+	                              	<i class="icon-folder-open"></i>
+	                                  1875:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1897">
+	                              	<i class="icon-folder-open"></i>
+	                                  1897:
+	                                  	                                   夜空下的狼	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1910">
+	                              	<i class="icon-folder-open"></i>
+	                                  1910:
+	                                  	                                   晓明	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1936">
+	                              	<i class="icon-folder-open"></i>
+	                                  1936:
+	                                  	                                   奔跑	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1938">
+	                              	<i class="icon-folder-open"></i>
+	                                  1938:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1942">
+	                              	<i class="icon-folder-open"></i>
+	                                  1942:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1944">
+	                              	<i class="icon-folder-open"></i>
+	                                  1944:
+	                                  	                                   袁黄清	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1947">
+	                              	<i class="icon-folder-open"></i>
+	                                  1947:
+	                                  	                                   维斯塔	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="1985">
+	                              	<i class="icon-folder-open"></i>
+	                                  1985:
+	                                  	                                   zero杰	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2025">
+	                              	<i class="icon-folder-open"></i>
+	                                  2025:
+	                                  	                                   观天象	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2034">
+	                              	<i class="icon-folder-open"></i>
+	                                  2034:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2043">
+	                              	<i class="icon-folder-open"></i>
+	                                  2043:
+	                                  	                                   张辉	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2063">
+	                              	<i class="icon-folder-open"></i>
+	                                  2063:
+	                                  	                                   谭振兴	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2075">
+	                              	<i class="icon-folder-open"></i>
+	                                  2075:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2076">
+	                              	<i class="icon-folder-open"></i>
+	                                  2076:
+	                                  	                                   18916801303	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2085">
+	                              	<i class="icon-folder-open"></i>
+	                                  2085:
+	                                  	                                   我是谁	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2090">
+	                              	<i class="icon-folder-open"></i>
+	                                  2090:
+	                                  	                                   萸	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2118">
+	                              	<i class="icon-folder-open"></i>
+	                                  2118:
+	                                  	                                   biubiubiubbb	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2123">
+	                              	<i class="icon-folder-open"></i>
+	                                  2123:
+	                                  	                                   Peixb	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2165">
+	                              	<i class="icon-folder-open"></i>
+	                                  2165:
+	                                  	                                   ①	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2179">
+	                              	<i class="icon-folder-open"></i>
+	                                  2179:
+	                                  	                                   lanyu	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2189">
+	                              	<i class="icon-folder-open"></i>
+	                                  2189:
+	                                  	                                   品茶人生	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2203">
+	                              	<i class="icon-folder-open"></i>
+	                                  2203:
+	                                  	                                   黎刚	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2222">
+	                              	<i class="icon-folder-open"></i>
+	                                  2222:
+	                                  	                                   jack	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2249">
+	                              	<i class="icon-folder-open"></i>
+	                                  2249:
+	                                  	                                   杨作亮	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2260">
+	                              	<i class="icon-folder-open"></i>
+	                                  2260:
+	                                  	                                   毛众	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2267">
+	                              	<i class="icon-folder-open"></i>
+	                                  2267:
+	                                  	                                   你在干嘛？卖萌啊！	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2277">
+	                              	<i class="icon-folder-open"></i>
+	                                  2277:
+	                                  	                                   SCC茼&amp;铜麻    	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2279">
+	                              	<i class="icon-folder-open"></i>
+	                                  2279:
+	                                  	                                   一个机智的少年	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2283">
+	                              	<i class="icon-folder-open"></i>
+	                                  2283:
+	                                  	                                   王波	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2286">
+	                              	<i class="icon-folder-open"></i>
+	                                  2286:
+	                                  	                                   星辉网络数码科技	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2297">
+	                              	<i class="icon-folder-open"></i>
+	                                  2297:
+	                                  	                                   大信	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2299">
+	                              	<i class="icon-folder-open"></i>
+	                                  2299:
+	                                  	                                   阳光	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2311">
+	                              	<i class="icon-folder-open"></i>
+	                                  2311:
+	                                  	                                   阳光N01	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2313">
+	                              	<i class="icon-folder-open"></i>
+	                                  2313:
+	                                  	                                   AARON.RisingPhoenix	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2354">
+	                              	<i class="icon-folder-open"></i>
+	                                  2354:
+	                                  	                                   零度网-吴林	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2367">
+	                              	<i class="icon-folder-open"></i>
+	                                  2367:
+	                                  	                                   旗云	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2391">
+	                              	<i class="icon-folder-open"></i>
+	                                  2391:
+	                                  	                                   智慧生活—老伍	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2402">
+	                              	<i class="icon-folder-open"></i>
+	                                  2402:
+	                                  	                                   绿茶十三	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2411">
+	                              	<i class="icon-folder-open"></i>
+	                                  2411:
+	                                  	                                   殷亮	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2434">
+	                              	<i class="icon-folder-open"></i>
+	                                  2434:
+	                                  	                                   A麻辣小龙虾～鸡头王撸串	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2440">
+	                              	<i class="icon-folder-open"></i>
+	                                  2440:
+	                                  	                                   芝麻	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2443">
+	                              	<i class="icon-folder-open"></i>
+	                                  2443:
+	                                  	                                   拂晓	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2444">
+	                              	<i class="icon-folder-open"></i>
+	                                  2444:
+	                                  	                                   杜杰	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2445">
+	                              	<i class="icon-folder-open"></i>
+	                                  2445:
+	                                  	                                   桂林自由行开心旅	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2458">
+	                              	<i class="icon-folder-open"></i>
+	                                  2458:
+	                                  	                                   特种兵	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2492">
+	                              	<i class="icon-folder-open"></i>
+	                                  2492:
+	                                  	                                   冉	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2496">
+	                              	<i class="icon-folder-open"></i>
+	                                  2496:
+	                                  	                                   业	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2506">
+	                              	<i class="icon-folder-open"></i>
+	                                  2506:
+	                                  	                                   QQ用户	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2523">
+	                              	<i class="icon-folder-open"></i>
+	                                  2523:
+	                                  	                                   承一	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2535">
+	                              	<i class="icon-folder-open"></i>
+	                                  2535:
+	                                  	                                   mwenhua	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2548">
+	                              	<i class="icon-folder-open"></i>
+	                                  2548:
+	                                  	                                   A消臭除醛	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2549">
+	                              	<i class="icon-folder-open"></i>
+	                                  2549:
+	                                  	                                   A远方的朋友	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2552">
+	                              	<i class="icon-folder-open"></i>
+	                                  2552:
+	                                  	                                   Kevin	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2560">
+	                              	<i class="icon-folder-open"></i>
+	                                  2560:
+	                                  	                                   ekinger	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2569">
+	                              	<i class="icon-folder-open"></i>
+	                                  2569:
+	                                  	                                   王	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2575">
+	                              	<i class="icon-folder-open"></i>
+	                                  2575:
+	                                  	                                   A粤（鸿粤网络，新丰同城）	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2578">
+	                              	<i class="icon-folder-open"></i>
+	                                  2578:
+	                                  	                                   sImple	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2588">
+	                              	<i class="icon-folder-open"></i>
+	                                  2588:
+	                                  	                                   511482696@qq.com	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2589">
+	                              	<i class="icon-folder-open"></i>
+	                                  2589:
+	                                  	                                   13554754719	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2590">
+	                              	<i class="icon-folder-open"></i>
+	                                  2590:
+	                                  	                                   13554754711	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2591">
+	                              	<i class="icon-folder-open"></i>
+	                                  2591:
+	                                  	                                   1273276548@qq.com	                              </span>
+            </li>
+            <li>
+				<span class="tree_span" data-id="2592">
+	                              	<i class="icon-folder-open"></i>
+	                                  2592:
+	                                  	                                   15766212618	                              </span>
+            </li>
+        </ul>
+    </div>
+
+</div>
+<script type="text/javascript">
+
+    //ajax 请求树下面的节点
+    $('.tree').on('click', '.tree_span', function () {
+
+        tmp_span = $(this);
+        tmp_span.siblings('ul').toggle();
+        if (tmp_span.hasClass('requrst'))
+            return false;
+
+        $.ajax({
+            type: "get",
+            url: "/index.php?m=Admin&c=Distribut&a=ajax_lower&id=" + tmp_span.data('id'),//+tab,
+            //data : $('#'+form).serialize(),// 你的formid
+            success: function (data) {
+                tmp_span.after(data);
+                tmp_span.addClass('requrst'); // 表示ajax 请求过了 不再请求第二次
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

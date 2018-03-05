@@ -1,0 +1,9 @@
+#robots.txtfor家家共享
+User-agent: *
+Disallow:
+Disallow: /install/ 
+Disallow: /plugins/ 
+Disallow: /public/ 
+Disallow: /static/ 
+Disallow: /template/ 
+Disallow: /router.php
