@@ -1,3 +1,0 @@
-<?php
-//000000003600a:20:{s:6:"switch";s:1:"1";s:9:"condition";s:1:"1";s:4:"name";s:15:"我的分销商";s:7:"pattern";s:1:"0";s:10:"order_rate";s:2:"30";s:7:"level_1";s:5:"50000";s:12:"level_1_rate";s:1:"5";s:7:"level_2";s:6:"500000";s:12:"level_2_rate";s:2:"10";s:7:"level_3";s:7:"3000000";s:12:"level_3_rate";s:2:"15";s:4:"date";s:1:"7";s:11:"form_submit";s:2:"ok";s:8:"own_rate";s:1:"0";s:7:"qr_back";s:0:"";s:11:"qr_big_back";s:0:"";s:16:"qrcode_menu_word";s:0:"";s:17:"qrcode_input_word";s:0:"";s:7:"level_4";s:8:"10000000";s:12:"level_4_rate";s:2:"20";}
-?>
